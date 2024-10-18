@@ -1,0 +1,5 @@
+/env/
+/movie_search/__pycache__/
+/movies/__pycache__/
+/movies/management/commands/__pycache__/
+/movies/migrations/

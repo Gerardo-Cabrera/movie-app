@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from movies.models import Genre
 
 class Command(BaseCommand):
-    help = 'Carga los géneros de películas desde la API de TMDb'
+    help = 'Load movie genres from the TMDb API'
 
     def handle(self, *args, **kwargs):
         url = "https://api.themoviedb.org/3/genre/movie/list?language=en"
@@ -21,11 +21,11 @@ class Command(BaseCommand):
                 genre_id = genre["id"]
                 name = genre["name"]
 
-                genre_obj, created = Genre.objects.get_or_create(genre_id=genre_id, defaults={"name": name})
+                _, created = Genre.objects.get_or_create(genre_id=genre_id, defaults={"name": name})
 
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f"Género {name} agregado."))
+                    self.stdout.write(self.style.SUCCESS(f"Genre {name} added."))
                 else:
-                    self.stdout.write(f"Género {name} ya existe.")
+                    self.stdout.write(f"Genre {name} already exists.")
         else:
-            self.stdout.write(self.style.ERROR(f"Error al obtener los géneros: {response.status_code}"))
+            self.stdout.write(self.style.ERROR(f"Error to get the genres: {response.status_code}"))

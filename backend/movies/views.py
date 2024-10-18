@@ -114,10 +114,10 @@ def movie_detail(request, movie_id, slug=None):
             movie.slug = slugify(movie.title.lower().replace('&', 'and'))
             movie.save()
 
-        movie_serialized = MovieSerializer(movie)                 # Serialize the movie object
-        return JsonResponse(movie_serialized.data)                # Return the serialized data as a JSON response
-    except Movie.DoesNotExist:                                    # If the movie does not exist in the database, return a 404 error
-        return Response({'error': 'Movie not found'}, status=404) # Return a 404 error response
+        movie_serialized = MovieSerializer(movie)                     # Serialize the movie object
+        return JsonResponse(movie_serialized.data)                    # Return the serialized data as a JSON response
+    except Movie.DoesNotExist:                                        # If the movie does not exist in the database, return a 404 error
+        return JsonResponse({'error': 'Movie not found'}, status=404) # Return a 404 error response
 
 @api_view(['POST'])
 def register(request):
@@ -128,7 +128,7 @@ def register(request):
         return Response({'detail': 'Password must be at least 8 characters long'}, status=status.HTTP_400_BAD_REQUEST)
 
     if CustomUser.objects.filter(email=email).exists():
-        return Response({'detail': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'detail': 'Email already exists'}, status=status.HTTP_409_CONFLICT)
 
     user = CustomUser.objects.create_user(email=email, password=password)
     refresh = RefreshToken.for_user(user)
@@ -176,7 +176,7 @@ def add_favorite(request, movie_id):
         _, created = Favorite.objects.get_or_create(user=user, movie=movie)
 
         if not created:
-            return Response({'message': 'Movie is already in favorites!'}, status=400)
+            return Response({'message': 'Movie is already in favorites!'}, status=409)
         
         return Response({'message': 'Movie added to favorites!'}, status=200)
     except Movie.DoesNotExist:
@@ -208,7 +208,7 @@ def add_review(request, imdb_id):
         rating = request.data.get('rating')
 
         if Review.objects.filter(user=user, movie=movie).exists():
-            return Response({'message': 'You have already reviewed this movie!'}, status=400)
+            return Response({'message': 'You have already reviewed this movie!'}, status=status.HTTP_409_CONFLICT)
         
         Review.objects.create(user=user, movie=movie, content=content, rating=rating)
         return Response({'message': 'Review submitted!'}, status=200)

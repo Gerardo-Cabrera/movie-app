@@ -3,3 +3,4 @@
 /movies/__pycache__/
 /movies/management/commands/__pycache__/
 /movies/migrations/
+.env

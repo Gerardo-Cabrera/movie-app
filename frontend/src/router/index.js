@@ -13,17 +13,13 @@ const routes = [
     component: MovieSearch
   },
   {
-    //path: '/movie/:movie_id',
     path: '/movie/:movie_id/:slug?',
-    //path: '/movie/:slug',
     name: 'MovieDetail',
     component: MovieDetail,
-    //props: true
     props: route => ({ 
       movie_id: route.params.movie_id, 
       slug: route.params.slug 
     })
-    //props: route => ({ movie_id: route.params.movie_id })
   },
   {
     path: '/login',

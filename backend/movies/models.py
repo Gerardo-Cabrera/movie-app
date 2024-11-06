@@ -14,11 +14,11 @@ class Genre(models.Model):
         return self.name
 
 class Movie(models.Model):
-    movie_id = models.IntegerField(db_index=True, unique=True)
+    movie_id = models.BigIntegerField(db_index=True, unique=True)
     title = models.CharField(max_length=255)
     date = models.CharField(max_length=10)
     genre = models.ManyToManyField(Genre, related_name='movies')
-    popularity = models.DecimalField(max_digits=5, decimal_places=2)
+    popularity = models.DecimalField(max_digits=7, decimal_places=2)
     poster_path = models.URLField()
     slug = models.SlugField(max_length=255, unique=True, blank=True)
 

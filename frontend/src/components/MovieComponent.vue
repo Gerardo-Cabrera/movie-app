@@ -2,7 +2,7 @@
     <div class="movie-info">
         <template v-if="movie.poster_url != null">
             <a @click.prevent="viewDetails" target="_blank" rel="noopener noreferrer">
-                <img v-if="movie.poster_url && movie.poster_url.trim() !== null" :src="movie.poster_url" alt="Movie poster">
+                <img v-if="movie.poster_url && movie.poster_url.trim() !== null" :src="movie.poster_url" alt="Movie poster" loading="lazy">
             </a>
         </template>
         <template v-else>
@@ -27,25 +27,6 @@
         props: {
             movie: Object
         },
-        // computed: {
-        //     // URL friendly slug for display in the browser
-        //     movieDetailsSlugUrl() {
-        //         const slug = this.generateSlug(this.movie.original_title);
-        //         return `/movies/${slug}`; // For the front-end URL
-        //     },
-        //     movieDetailsUrl() {
-        //         console.log(this.movie.id);
-        //         if (this.movie && this.movie.id) {
-        //             const slug = this.generateSlug(this.movie.original_title);
-        //             console.log(`/movie/${this.movie.id}/${slug}`);
-        //             //return `/movie/${slug}`;
-        //             //return `/movie/${this.movie.id}/${slug}`;
-        //             return `/movie/${this.movie.id}`;
-        //         } else {
-        //             return '#';
-        //         }
-        //     }
-        // },
         methods: {
             generateSlug(title) {
                 return title

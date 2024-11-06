@@ -2,7 +2,6 @@
 import requests
 from django.http import JsonResponse
 from django.conf import settings
-from decouple import config
 from .models import Genre, Movie, Favorite, Review, CustomUser
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
@@ -18,9 +17,9 @@ from datetime import datetime
 from urllib.parse import urlencode
 
 def search_movies(request):
-    api_token = config('API_TOKEN_TMDB')
+    api_key_tmdb = settings.API_KEY_TMDB
 
-    query = request.GET.get('q', '')
+    query = request.GET.get('q', '').strip()
     page = request.GET.get('page', 1)
     rating = request.GET.get('rating', None)
     year = request.GET.get('year', None)
@@ -34,14 +33,10 @@ def search_movies(request):
         'with_genres': genre
     }.items() if v is not None}
 
-    api_url = config('API_URL_TMDB_SEARCH_MOVIE') if query else config('API_URL_TMDB_DISCOVER_MOVIE')
-    url = f"{api_url}?{urlencode(params)}"
-
-    headers = {
-        "accept": config('HEADERS_ACCEPT'),
-        "Authorization": f"Bearer {api_token}"
-    }
-    response = requests.get(url, headers=headers)
+    api_url = settings.API_URL_TMDB_SEARCH_MOVIE if query else settings.API_URL_TMDB_DISCOVER_MOVIE
+    api_key = f"&api_key={api_key_tmdb}"
+    url = f"{api_url}{urlencode(params)}{api_key}"
+    response = requests.get(url)
     data = response.json()
 
     if data.get('total_results') == 0:
@@ -49,7 +44,7 @@ def search_movies(request):
     
     movies = data.get('results', [])
 
-    poster_url = config('POSTER_URL_TMDB')
+    poster_url = settings.POSTER_URL_LIST_MOVIES
     filtered_movies = movie_filter(movies, genre, rating, year)
     
     for movie in movies:
@@ -79,19 +74,24 @@ def movie_filter(movies, genre=None, rating=None, year=None):
     
     return filtered_movies
 
+def movie_duration(time):
+    hours = time // 60
+    minutes = time % 60
+    return f"{hours}h {minutes}m"
+
 def movie_detail(request, movie_id, slug=None):
-    print("Movie ID: ", movie_id)
-    print("Slug: ", slug)
     try:
-        api_token = config('API_TOKEN_TMDB')
-        api_url = config('API_URL_TMDB_MOVIE_DETAIL')
-        url = f'{api_url}{movie_id}'
-        headers = {
-            "accept": config('HEADERS_ACCEPT'),
-            "Authorization": f"Bearer {api_token}"
-        }
-        response = requests.get(url, headers=headers)
+        api_url = settings.API_URL_TMDB_MOVIE_DETAIL
+        api_key_tmdb = settings.API_KEY_TMDB
+        api_key = f"?api_key={api_key_tmdb}"
+        url = f"{api_url}{movie_id}{api_key}"
+        response = requests.get(url)
         data = response.json() # Parse the JSON response
+
+        runtime = data.get('runtime', 0)
+        duration = movie_duration(runtime)
+
+        poster_url = settings.POSTER_URL_MOVIE_DETAIL
         
         movie, _ = Movie.objects.get_or_create(
             movie_id = data['id'],
@@ -114,8 +114,14 @@ def movie_detail(request, movie_id, slug=None):
             movie.slug = slugify(movie.title.lower().replace('&', 'and'))
             movie.save()
 
-        movie_serialized = MovieSerializer(movie)                     # Serialize the movie object
-        return JsonResponse(movie_serialized.data)                    # Return the serialized data as a JSON response
+        movie_serialized = MovieSerializer(movie).data                     # Serialize the movie object
+        movie_serialized['date'] = datetime.strptime(movie.date, "%Y-%m-%d").strftime("%m/%d/%Y")
+        movie_serialized['poster_url'] = f"{poster_url}{movie.poster_path}"
+        movie_serialized['genre_names'] = [genre.name for genre in movie.genre.all()]
+        movie_serialized['year'] = data['release_date'][:4]
+        movie_serialized['duration'] = duration
+        print(movie_serialized.keys())
+        return JsonResponse(movie_serialized)                         # Return the serialized data as a JSON response
     except Movie.DoesNotExist:                                        # If the movie does not exist in the database, return a 404 error
         return JsonResponse({'error': 'Movie not found'}, status=404) # Return a 404 error response
 

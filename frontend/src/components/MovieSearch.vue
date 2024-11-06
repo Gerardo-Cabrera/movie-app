@@ -58,24 +58,6 @@
       <h2 class="results-title">Results</h2>
       <ul v-if="movies.length" class="movies-list">
         <li v-for="movie in movies" :key="movie.imdbID" class="movie-item">
-          <!-- <div class="movie-info">
-            <template v-if="movie.poster_url != null">
-              <a :href="tmdbUrl" :movie="movie" target="_blank" rel="noopener noreferrer">
-                <img v-if="movie.poster_url && movie.poster_url.trim() !== null" :src="movie.poster_url" alt="Movie poster">
-              </a>
-            </template>
-            <template v-else>
-              <i class="bi bi-image" style="font-size: 100px;"></i>
-            </template>
-            <h5 class="movie-title">{{ movie.original_title }}</h5>
-            <p>{{ movie.release_date }}</p>
-            <button 
-              @click="viewDetails(movie.id)" 
-              class="details-button"
-              >
-              View Details
-            </button>
-          </div> -->
           <movie-component :movie="movie"></movie-component>
         </li>
       </ul>
@@ -102,7 +84,6 @@
   import axios from '@/axios';
   import MovieComponent from './MovieComponent';
   import { AuthService } from '@/utils/auth';
-  import { API_CONFIG } from '@/config';
   
   export default {
     data() {
@@ -137,23 +118,18 @@
       hasActiveFilters() {
         return this.query.trim() || this.filters.rating || this.filters.year || this.filters.genre;
       },
-      tmdbUrl() {
-        console.log(this.movie);
-        return `${API_CONFIG.tmdbMovie}${this.movie}`;
-      },
     },
     mounted() {
         this.getGenres();
+        this.searchMovies();
     },
     methods: {
       async searchMovies() {
-        console.log(this.yearErrorMessage);
         this.movies = [];
         this.errorMessage = null;
         this.yearErrorMessage = '';
         this.hasSearched = true;
         this.isLoading = true;
-        console.log(this.filters.year);
 
         const params = Object.fromEntries(
           Object.entries({
@@ -165,16 +141,13 @@
             genre: this.filters.genre
           }).filter(([, value]) => value !== null && value !== '')
         );
-        console.log(params);
 
         try {
           const response = await axios.get(`movies/search/`, { params });
-          console.log(response);
           this.movies = response?.data?.movies;
           this.hasMorePages = this.movies.length > 0;
           if (!this.movies && (this.filters.year || this.query || this.filters.genre || this.filters.rating) || response.error) {
             this.errorMessage = "There are no movies available";
-            console.log(this.errorMessage);
           }
         } catch (error) {
           console.error('Error fetching movies:', error);
@@ -200,7 +173,6 @@
         }
       },
       viewDetails(movie_id) {
-        //this.$router.push({ name: 'MovieDetail', params: { movie_id } });
         window.open(`/movies/${movie_id}`, '_blank');
       },
       logout() {
@@ -230,17 +202,14 @@
       },
       handleSearch() {
         this.validateYear();
-        //const year = this.filters.year ? this.filters.year.toString() : '';
 
         if (!this.yearErrorMessage) {
           this.searchMovies();
         }
       },
       validateYear() {
-        //const currentYear = new Date().getFullYear();
         const minYear = 1882;
         const year = this.filters.year;
-        console.log(year);
         this.yearErrorMessage = '';
 
         if (year && (parseInt(year) < minYear || year.length !== 4)) {
@@ -257,7 +226,6 @@
       filters: {
         handler() {
           this.page = 1;
-          //this.searchMovies();
         },
         deep: true
       }
@@ -281,7 +249,7 @@
   width: 350px;
   padding: 12px;
   margin-bottom: 10px;
-  border-radius: 4px;
+  border-radius: 10px;
   border: 1px solid #ccc;
   font-size: 16px;
 }
@@ -291,7 +259,7 @@
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 16px;
 }
@@ -437,7 +405,7 @@
 .filter-input, .filter-select {
   padding: 10px;
   border: 2px solid #ddd;
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 14px;
   width: 150px;
   transition: border-color 0.3s;

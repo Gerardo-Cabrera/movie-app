@@ -23,6 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-+&$^%o%d#%y^odvix@(v)n()#pul&&-9yj51j#l0xizzky!pvg'
+API_KEY_TMDB = config('API_KEY_TMDB')
+API_TOKEN_TMDB = config('API_TOKEN_TMDB')
+API_URL_TMDB_SEARCH_MOVIE = config('API_URL_TMDB_SEARCH_MOVIE')
+API_URL_TMDB_DISCOVER_MOVIE = config('API_URL_TMDB_DISCOVER_MOVIE')
+API_URL_TMDB_MOVIE_DETAIL = config('API_URL_TMDB_MOVIE_DETAIL')
+API_URL_TMDB_GENRES_MOVIES = config('API_URL_TMDB_GENRES_MOVIES')
+POSTER_URL_LIST_MOVIES = config('POSTER_URL_LIST_MOVIES')
+POSTER_URL_MOVIE_DETAIL = config('POSTER_URL_MOVIE_DETAIL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
